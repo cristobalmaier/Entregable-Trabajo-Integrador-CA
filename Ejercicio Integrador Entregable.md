@@ -169,7 +169,6 @@ apt install php-mysql -y
 systemctl restart apache2
 ```
 
-
 2. Verificamos si esta funcionando de manera correcta
 
 ```shell
@@ -452,28 +451,22 @@ Este ES el original que me funciono, el otro nose porque no funciono
 
 ```bash
 #!/bin/bash
-
-# Validación de la opción de ayuda (-help) o falta de argumentos obligatorios
 if [ "$1" = "-help" ] || [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Uso: $0 [origen] [destino]"
-    exit 0
+	echo "Uso: $0 [origen] [destino]"
+	exit 0
 fi
 
-# Definición de variables dinámicas basadas en los argumentos de entrada
 FECHA=$(date +"%Y%m%d")
 B=$(basename "$1")
 
-# Verificación de disponibilidad de los sistemas de archivos de origen y destino
 if [ ! -d "$1" ] || [ ! -d "$2" ]; then
-    echo "ERROR: Carpetas no disponibles"
-    exit 1
+	echo "ERROR: Carpetas no disponibles"
+	exit 1
 fi
 
-# Ejecución del empaquetado y compresión con nomenclatura ANSI (YYYYMMDD)
 tar -czf "$2/${B}_bkp_${FECHA}.tar.gz" -C "$(dirname "$1")" "$B"
-echo "Backup realizado"
+echo "Backup Realizado"
 ```
-
 
 3. Le damos permisos
 
