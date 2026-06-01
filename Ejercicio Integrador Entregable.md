@@ -435,7 +435,7 @@ fi
 
 ORIGEN="$1"
 DESTINO="$2"
-FECHA=$(date +"%Y%m%d")
+FECHA=$(date +"%Y%m%d_%H%M%S")
 NOMBRE_BASE=$(basename "$ORIGEN")
 
 if [ ! -d "$ORIGEN" ] || [ ! -d "$DESTINO" ]; then
