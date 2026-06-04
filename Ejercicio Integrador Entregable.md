@@ -169,6 +169,7 @@ apt install php-mysql -y
 systemctl restart apache2
 ```
 
+
 2. Verificamos si esta funcionando de manera correcta
 
 ```shell
@@ -409,7 +410,7 @@ Agregamos estas 2 lineas al final del archivo
 
 Esto sirve para que cada vez que arranque el sistema, las particiones se monten automáticamente en sus respectivas rutas.
 
-16. Creamos la particion /opt/particion para redirigir el contenido de /proc/partitions 
+16. Creamos el archivo `/opt/particion` para almacenar el contenido de `/proc/partitions`. 
  
 ```shell
 cat /proc/partitions > /opt/particion
@@ -428,35 +429,12 @@ vi /opt/scripts/backup_full.sh
 
 ```bash
 #!/bin/bash
-if [ "$1" == "-help" ] || [ -z "$1" ] || [ -z "$2" ]; then
-    echo "Uso: $0 [origen] [destino]"
-    exit 0
-fi
-
-ORIGEN="$1"
-DESTINO="$2"
-FECHA=$(date +"%Y%m%d_%H%M%S")
-NOMBRE_BASE=$(basename "$ORIGEN")
-
-if [ ! -d "$ORIGEN" ] || [ ! -d "$DESTINO" ]; then
-    echo "ERROR: Origen o Destino no disponibles"
-    exit 1
-fi
-
-tar -czf "$DESTINO/${NOMBRE_BASE}_bkp_${FECHA}.tar.gz" -C "$(dirname "$ORIGEN")" "$NOMBRE_BASE"
-echo "Backup realizado"
-```
-
-Este ES el original que me funciono, el otro nose porque no funciono
-
-```bash
-#!/bin/bash
 if [ "$1" = "-help" ] || [ -z "$1" ] || [ -z "$2" ]; then
 	echo "Uso: $0 [origen] [destino]"
 	exit 0
 fi
 
-FECHA=$(date +"%Y%m%d")
+FECHA=$(date +"%Y%m%d_%H%M%S")
 B=$(basename "$1")
 
 if [ ! -d "$1" ] || [ ! -d "$2" ]; then
@@ -513,7 +491,9 @@ crontab -e
 crontab -l
 ```
 
-### 7. Transferencia de archivos y Github
+12. Tuve problemas a la hora de hacer el backup, porque se sobreescribia el archivo, para arreglarlo encontra una menra que era la de poner los segundas en la varibale de la fecha **FECHA=$(date +"%Y%m%d_%H%M%S")**
+
+### 7. Transferencia de archivos y GitHub
 
 1. Verificamos que el servicio SSH estuviera funcionando correctamente en Debian.
 
@@ -526,6 +506,8 @@ systemctl status ssh
 ```
 vi /etc/ssh/sshd_config
 ```
+
+Para realizar la transferencia mediante SCP se habilitó temporalmente la autenticación por contraseña para el usuario root.
 
 Modificamos:
 
@@ -552,26 +534,63 @@ ping 192.168.0.150
 ssh root@192.168.0.150
 ```
 
-6. Salimos de la sesión SSH para volver a la terminal de la computadora anfitriona.
+6. Creamos un directorio destinado a almacenar los archivos de entrega.
+
+```
+mkdir -p /root/entrega
+```
+
+7. Comprimimos individualmente los directorios solicitados por la consigna.
+
+```
+tar -czf /root/entrega/root.tar.gz /root
+tar -czf /root/entrega/etc.tar.gz /etc
+tar -czf /root/entrega/opt.tar.gz /opt
+tar -czf /root/entrega/www_dir.tar.gz /www_dir
+tar -czf /root/entrega/backup_dir.tar.gz /backup_dir
+```
+
+8. Comprimimos el directorio `/var`.
+
+```
+tar -czf /root/entrega/var.tar.gz /var
+```
+
+9. Debido al tamaño del archivo, dividimos el comprimido de `/var` en partes más pequeñas para facilitar su subida a GitHub.
+
+```
+split -b 100M /root/entrega/var.tar.gz /root/entrega/var.tar.gz.part_
+```
+
+10. Verificamos la correcta generación de todos los archivos.
+
+```
+ls -lh /root/entrega
+```
+
+11. Salimos de la sesión SSH para volver a la terminal de la computadora anfitriona.
 
 ```
 exit
 ```
 
-7. Copiamos el directorio de entrega desde la máquina virtual hacia la computadora anfitriona utilizando SCP.
+12. Copiamos el directorio de entrega desde la máquina virtual hacia la computadora anfitriona utilizando SCP.
 
 ```
 scp -r root@192.168.0.150:/root/entrega .
 ```
 
-8. Ingresamos la contraseña del usuario root cuando fue solicitada.
-9. Verificamos que los archivos se descargaron correctamente.
+Se utilizó SCP porque permite transferir archivos de forma segura entre computadoras mediante SSH.
+
+13. Ingresamos la contraseña del usuario root cuando fue solicitada.
+
+14. Verificamos que los archivos se descargaron correctamente.
 
 ```
 ls -lh entrega
 ```
 
-10. Confirmamos la presencia de los archivos requeridos para la entrega.
+15. Confirmamos la presencia de los archivos requeridos para la entrega.
 
 ```
 root.tar.gz
@@ -579,5 +598,28 @@ etc.tar.gz
 opt.tar.gz
 www_dir.tar.gz
 backup_dir.tar.gz
+var.tar.gz
 var.tar.gz.part_aa
 ```
+
+16. Se creó un repositorio en GitHub y se confeccionó el archivo `README.md` con los integrantes del grupo.
+
+17. Se copiaron los archivos descargados al repositorio local y se agregaron al control de versiones.
+
+```
+git add .
+```
+
+18. Se realizó el commit de la entrega.
+
+```
+git commit -m "Entrega TP VMCA"
+```
+
+19. Finalmente, se publicó el contenido en GitHub.
+
+```
+git push origin main
+```
+
+20. Se verificó en GitHub la presencia del archivo `README.md` y de todos los archivos comprimidos solicitados por la consigna.
