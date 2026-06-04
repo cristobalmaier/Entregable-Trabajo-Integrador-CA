@@ -1,6 +1,8 @@
-# Entregable-Trabajo-Integrador-CA
+# Entregable Trabajo Integrador CA
+
+## Integrantes
 
 - Cristobal Maier
-- ARIEL SAGASTUME KOHN
+- Ariel Sagastume Kohn
 - Valentin Miño
 - Maximo Vega
